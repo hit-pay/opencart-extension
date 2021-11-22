@@ -1,4 +1,8 @@
 <?php
+require_once DIR_SYSTEM.'library/hitpay-php-sdk/Request.php';
+require_once DIR_SYSTEM.'library/hitpay-php-sdk/Client.php';
+require_once DIR_SYSTEM.'library/hitpay-php-sdk/Response/Refund.php';
+
 class ControllerExtensionPaymentHitPay extends Controller {
     private $error = array();
 
@@ -109,6 +113,17 @@ class ControllerExtensionPaymentHitPay extends Controller {
             $data['payment_hitpay_title'] = $this->config->get('payment_hitpay_title');
         }
 
+        $data['payment_logos'] = $this->get_payment_logos();
+        if (isset($this->request->post['payment_hitpay_logo'])) {
+            $data['payment_hitpay_logo'] = $this->request->post['payment_hitpay_logo'];
+        } else {
+            $payment_hitpay_logo = $this->config->get('payment_hitpay_logo');
+            if (empty($payment_hitpay_logo)) {
+                $payment_hitpay_logo = [];
+            }
+            $data['payment_hitpay_logo'] = $payment_hitpay_logo;
+        }
+
         $data['payment_methods'] = ['paynow_online' , 'card', 'wechat', 'alipay'];
 
         $this->load->model('localisation/order_status');
@@ -160,4 +175,179 @@ class ControllerExtensionPaymentHitPay extends Controller {
 
         return !$this->error;
     }
+    
+    public function get_payment_logos()
+    {
+        $list = array(
+            array(
+                'value' => 'visa',
+                'label' => 'Visa'
+            ),
+            array(
+                'value' => 'master',
+                'label' => 'Mastercard'
+            ),
+            array(
+                'value' => 'american_express',
+                'label' => 'American Express'
+            ),
+            array(
+                'value' => 'apple_pay',
+                'label' => 'Apple Pay'
+            ),
+            array(
+                'value' => 'google_pay',
+                'label' => 'Google Pay'
+            ),
+            array(
+                'value' => 'paynow',
+                'label' => 'PayNow QR'
+            ),
+            array(
+                'value' => 'grabpay',
+                'label' => 'GrabPay'
+            ),
+            array(
+                'value' => 'wechatpay',
+                'label' => 'WeChatPay'
+            ),
+            array(
+                'value' => 'alipay',
+                'label' => 'AliPay'
+            ),
+            array(
+                'value' => 'shopeepay',
+                'label' => 'Shopee Pay'
+            )
+        );
+        return $list;
+    }
+    
+    public function install() {
+		$this->load->model('extension/payment/hitpay');
+		$this->model_extension_payment_hitpay->install();
+	}
+
+	public function uninstall() {
+		$this->load->model('extension/payment/hitpay');
+		$this->model_extension_payment_hitpay->uninstall();
+	}
+        
+        public function order_info(&$route, &$data, &$output)
+        {
+            $order_id = $this->request->get['order_id'];
+            $this->load->model('extension/payment/hitpay');
+            $order = $this->model_extension_payment_hitpay->getOrder($order_id);
+            
+            if ($order) {
+                $metaData = $order['response'];
+                if (!empty($metaData)) {
+                    $metaData = json_decode($metaData, true);
+ 
+                    if(isset($metaData['payment_id']) && !empty($metaData['payment_id'])) {
+                        $this->load->model('sale/order');
+                        $order_info = $this->model_sale_order->getOrder($order_id);
+                        $params = $metaData;
+                        
+                        $tab['title'] = 'HitPay Refund';
+                        $tab['code'] = 'hitpay_refund';
+                        if(isset($metaData['is_refunded']) && $metaData['is_refunded'] == 1) {
+                            $params['amount_refunded'] = $this->currency->format($metaData['refundData']['amount_refunded'], $order_info['currency_code'], $order_info['currency_value']);
+                            $params['total_amount'] = $this->currency->format($metaData['refundData']['total_amount'], $order_info['currency_code'], $order_info['currency_value']);
+                        } else {
+                            $params['is_refunded'] = 0;
+                            $params['amount'] = $this->currency->format($order_info['total'], $order_info['currency_code'], $order_info['currency_value']);
+                        }
+                        
+                        $params['user_token'] = $this->session->data['user_token'];
+                        $params['order_id'] = $order_id;
+                        
+                        $content = $this->load->view('extension/payment/hitpay_refund', $params);
+                        
+                        $tab['content'] = $content;
+                        $data['tabs'][] = $tab;
+                    }
+                }
+            }
+        }
+        
+        public function refund()
+        {
+            $response = array();
+            $status = 0;
+            
+            try {
+                if (isset($this->request->post['order_id'])) {
+                    $order_id = $this->request->post['order_id'];
+		} else {
+                    $order_id = 0;
+		}
+                
+                if (isset($this->request->post['hitpay_amount'])) {
+                    $hitpay_amount = $this->request->post['hitpay_amount'];
+		} else {
+                    $hitpay_amount = 0;
+		}
+                
+                if (isset($this->request->post['payment_id'])) {
+                    $transaction_id = $this->request->post['payment_id'];
+		} else {
+                    $transaction_id = 0;
+		}
+                
+                $this->load->model('sale/order');
+                $order_info = $this->model_sale_order->getOrder($order_id);
+                
+                $order_total_paid = $order_info['total'];
+                $amount = $hitpay_amount;
+                
+                if ($amount <= 0) {
+                    throw new \Exception('Refund amount shoule be greater than 0');
+                }
+                
+                if ($amount > $order_total_paid) {
+                    throw new \Exception('Refund amount shoule be less than or equal to order paid total ('.$order_total_paid.')');
+                }
+                
+                if ($this->config->get('payment_hitpay_mode') == 'live') {
+                    $hitPayClient = new \HitPay\Client($this->config->get('payment_hitpay_api_key'), true);
+                } else {
+                    $hitPayClient = new \HitPay\Client($this->config->get('payment_hitpay_api_key'), false);
+                }
+
+                $result = $hitPayClient->refund($transaction_id, $amount);
+                
+                $this->load->model('extension/payment/hitpay');
+                $this->model_extension_payment_hitpay->updatePaymentData($order_id, 'refundData', array(
+                    'order_id' => (int) $order_id,
+                    'refund_id' =>  $result->getId(),
+                    'payment_id' => $result->getPaymentId(),
+                    'status' => $result->getStatus(),
+                    'amount_refunded' => $result->getAmountRefunded(),
+                    'total_amount' => $result->getTotalAmount(),
+                    'currency' => $result->getCurrency(),
+                    'payment_method' => $result->getPaymentMethod(),
+                    'created_at' => $result->getCreatedAt()
+                ));
+                $order = $this->model_extension_payment_hitpay->updatePaymentData($order_id, 'is_refunded', 1);
+
+                $message = 'Refund successful. Refund Reference Id: '.$result->getId().', '
+                        . 'Payment Id: '.$transaction_id.', Amount Refunded: '.$result->getAmountRefunded().', '
+                        . 'Payment Method: '.$result->getPaymentMethod().', Created At: '.$result->getCreatedAt();
+  
+                $total_refunded = $result->getAmountRefunded();
+                if ($total_refunded >= $order_total_paid) {
+                    //$message .= ' Order status changed, please reload the page';
+                }
+                $status = 1;
+            } catch (\Exception $e) {
+                $message = 'Refund Payment Failed: '.$e->getMessage();
+            }
+            
+            $response['status'] = $status;
+            $response['message'] = $message;
+            
+            echo json_encode($response);
+            exit;
+        }
 }

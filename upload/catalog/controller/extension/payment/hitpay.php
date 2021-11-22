@@ -56,13 +56,24 @@ class ControllerExtensionPaymentHitPay extends Controller {
         $hmac = $hitPayClient::generateSignatureArray($this->config->get('payment_hitpay_signature'), (array)$request);
 
 		if ($hmac == $this->request->post['hmac']) {
-			$this->load->model('checkout/order');
-			$this->model_checkout_order->addOrderHistory((int)$this->request->post['reference_number'], $this->config->get('payment_hitpay_order_status_id'));
+                    $this->load->model('extension/payment/hitpay');
+                    $order_id = (int)$this->request->post['reference_number'];
+                    if ($order_id > 0) {
+                        $metaData = $this->model_extension_payment_hitpay->getPaymentData($order_id);
+                        if (empty($metaData) || !$metaData) {
+                            $paymentData = $this->request->post;
+                            $paymentData = json_encode($paymentData);
+                            $this->model_extension_payment_hitpay->addPaymentData($order_id, $paymentData);
+                        }
+                    }
+                    
+                    $this->load->model('checkout/order');
+                    $this->model_checkout_order->addOrderHistory((int)$this->request->post['reference_number'], $this->config->get('payment_hitpay_order_status_id'));
 		}
 	}
 
 	public function send() {
-
+            
         if ($this->config->get('payment_hitpay_mode') == 'live') {
             $hitPayClient = new \HitPay\Client($this->config->get('payment_hitpay_api_key'), true);
         } else {
@@ -70,11 +81,15 @@ class ControllerExtensionPaymentHitPay extends Controller {
         }
 
         $this->load->model('checkout/order');
+        $this->load->model('extension/payment/hitpay');
 
         $order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
         if ($order_info) {
 
             try {
+                $payment_method = $this->config->get('payment_hitpay_title');
+                $this->model_extension_payment_hitpay->updateOrderData($order_info['order_id'], 'payment_method', $payment_method);
+                
                 $request = new \HitPay\Request\CreatePayment();
 
                 $request

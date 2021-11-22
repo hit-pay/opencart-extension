@@ -16,11 +16,13 @@ class ModelExtensionPaymentHitPay extends Model {
 		}
 
 		$method_data = array();
+                
+                $title = $this->config->get('payment_hitpay_title') ? $this->config->get('payment_hitpay_title') : $this->language->get('text_title');
 
 		if ($status) {
 			$method_data = array(
 				'code'       => 'hitpay',
-				'title'      => $this->config->get('payment_hitpay_title') ? $this->config->get('payment_hitpay_title') : $this->language->get('text_title'),
+				'title'      => $this->displayLogos($title, $this->config->get('payment_hitpay_logo')),
 				'terms'      => '',
 				'sort_order' => $this->config->get('payment_hitpay_sort_order')
 			);
@@ -28,4 +30,65 @@ class ModelExtensionPaymentHitPay extends Model {
 
 		return $method_data;
 	}
+        
+        public function displayLogos($title, $logos)
+        {
+            $customizedTitle = $title;
+
+            if (isset($_REQUEST['route']) && $_REQUEST['route'] == 'checkout/payment_method') {
+                $customizedTitle .= '<span>';
+                foreach ($logos as $logo) {
+                   $customizedTitle .= ' <img src="'. HTTPS_SERVER .'image/payment/hitpay/'.$logo.'.svg" alt="'.$logo.'" style="height:23px" />';
+                }
+                $customizedTitle .= '</span>';
+            }
+            
+            return $customizedTitle;
+        }
+        
+        public function getPaymentData($order_id)
+        {
+            $qry = $this->db->query('select response FROM ' . DB_PREFIX.'hitpay_order WHERE order_id='.(int)($order_id));
+            if ($qry->num_rows) {
+                    $row = $qry->row;
+                    return $row['response'];
+            } else {
+                    return false;
+            }
+        }
+
+        public function addPaymentData($order_id, $response)
+        {
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "hitpay_order` SET `order_id` = '" . (int)$order_id . "',  `response` = '" . $this->db->escape($response) . "'");
+        }
+
+        public function updatePaymentData($order_id, $param, $value)
+        {
+            $metaData = $this->getPaymentData($order_id);
+            if (!empty($metaData)) {
+                $metaData = json_decode($metaData, true);
+                $metaData[$param] = $value;
+                $paymentData = json_encode($metaData);
+                $this->db->query("UPDATE " . DB_PREFIX . "hitpay_order SET response = '" . $this->db->escape($paymentData) . "' WHERE order_id = '" . (int)$order_id . "'");
+            }
+        }
+
+        public function deletePaymentData($order_id, $param)
+        {
+            $metaData = $this->getPaymentData($order_id);
+            if (!empty($metaData)) {
+                $metaData = json_decode($metaData, true);
+                if (isset($metaData[$param])) {
+                    unset($metaData[$param]);
+                }
+                $paymentData = json_encode($metaData);
+
+                $this->db->query("UPDATE " . DB_PREFIX . "hitpay_order SET response = '" . $this->db->escape($paymentData) . "' WHERE order_id = '" . (int)$order_id . "'");
+            }
+        }
+        
+        public function updateOrderData($order_id, $param, $value)
+        {
+            $this->db->query("UPDATE " . DB_PREFIX . "order SET {$param} = '" . $this->db->escape($value) . "' WHERE order_id = '" . (int)$order_id . "'");
+        }
 }
