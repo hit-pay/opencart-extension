@@ -1,3 +1,3 @@
 <?php
 // Text
-$_['text_title'] = 'PayNow QR and Credit Card Checkout (HitPay)';
+$_['text_title'] = 'HitPay Payment Gateway';

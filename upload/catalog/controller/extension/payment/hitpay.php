@@ -26,6 +26,8 @@ class ControllerExtensionPaymentHitPay extends Controller {
         }
 
         if ($this->request->get['status'] == 'completed') {
+            $order_id = (int)($this->session->data['order_id']);
+            $this->db->query("UPDATE `" . DB_PREFIX . "order` SET order_status_id  = '" . (int)$this->config->get('payment_hitpay_order_status_id') . "' WHERE order_id = '" . (int)$order_id . "'");
             $this->response->redirect($this->url->link('checkout/success', '', true));
         } else {
             $this->response->redirect($this->url->link('checkout/failure', '', true));

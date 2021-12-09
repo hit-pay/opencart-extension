@@ -72,20 +72,6 @@
               <input type="text" name="payment_hitpay_title" value="{{ payment_hitpay_title }}" placeholder="{{ entry_title_placeholder }}" id="input-title" class="form-control" />
             </div>
           </div>
-          {#<div class="form-group">
-            <label class="col-sm-2 control-label" for="payment_method"><span data-toggle="tooltip" title="{{ help_payment_method }}">{{ entry_payment_method }}</span></label>
-            <div class="col-sm-10">
-                {% for payment_method in payment_methods %}
-                  {% if payment_method in payment_hitpay_payment_method %}
-                  <input type="checkbox" name="payment_hitpay_payment_method[]" value="{{ payment_method }}" checked="checked" />
-                  {{ payment_method }}
-                {% else %}
-                  <input type="checkbox" name="payment_hitpay_payment_method[]" value="{{ payment_method }}" />
-                  {{ payment_method }}
-                  {% endif %}
-                {% endfor %}
-            </div>
-          </div>#}
           <div class="form-group">
             <label class="col-sm-2 control-label" for="input-hitpay_logo">Payment Logos</label>
             <div class="col-sm-10">
