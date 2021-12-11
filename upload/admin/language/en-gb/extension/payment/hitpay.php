@@ -1,14 +1,14 @@
 <?php
 // Heading
-$_['heading_title']		 = 'HitPay';
+$_['heading_title']		 = 'HitPay Payment Gateway';
 
 // Text
 $_['text_extension']	 = 'Extensions';
-$_['text_success']		 = 'Success: You have modified HitPay account details!';
-$_['text_edit']          = 'Edit HitPay';
+$_['text_success']		 = 'Success: You have modified HitPay Payment Gateway account details!';
+$_['text_edit']          = 'Edit HitPay Payment Gateway';
 $_['text_live']			 = 'Live Mode';
 $_['text_sandbox']		 = 'Sandbox Mode';
-$_['text_hitpay']		 = '<img src="view/image/payment/hitpay.png" alt="HitPay" title="HitPay" style="border: 1px solid #EEEEEE;" />';
+$_['text_hitpay']		 = '<img src="view/image/payment/hitpay.png" alt="HitPay Payment Gateway" title="HitPay Payment Gateway" style="border: 1px solid #EEEEEE;" />';
 
 // Entry
 $_['entry_api_key']	     = 'API Key';
@@ -25,9 +25,9 @@ $_['entry_sort_order']	 = 'Sort Order';
 
 // Help
 $_['help_total']		 = 'The checkout total the order must reach before this payment method becomes active.';
-$_['help_title']		 = 'Method name shown on checkout page, if empty default will be used: PayNow QR and Credit Card Checkout (HitPay)';
+$_['help_title']		 = 'Method name shown on checkout page, if empty default will be used: HitPay Payment Gateway';
 
 // Error
-$_['error_permission']	 = 'Warning: You do not have permission to modify payment HitPay!';
+$_['error_permission']	 = 'Warning: You do not have permission to modify payment HitPay Payment Gateway!';
 $_['error_api_key']	 = 'API key Required!';
 $_['error_signature']	 = 'Signature Required!';

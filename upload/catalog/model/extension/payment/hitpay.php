@@ -17,7 +17,11 @@ class ModelExtensionPaymentHitPay extends Model {
 
 		$method_data = array();
                 
-                $title = $this->config->get('payment_hitpay_title') ? $this->config->get('payment_hitpay_title') : $this->language->get('text_title');
+                $title = $this->config->get('payment_hitpay_title');
+                $title = trim($title);
+                if (empty($title)) {
+                    $title = $this->language->get('text_title');
+                }
 
 		if ($status) {
 			$method_data = array(
