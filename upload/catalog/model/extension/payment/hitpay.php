@@ -42,7 +42,7 @@ class ModelExtensionPaymentHitPay extends Model {
             if (isset($_REQUEST['route']) && $_REQUEST['route'] == 'checkout/payment_method') {
                 $customizedTitle .= '<span>';
                 foreach ($logos as $logo) {
-                   $customizedTitle .= ' <img src="'. HTTPS_SERVER .'image/payment/hitpay/'.$logo.'.svg" alt="'.$logo.'" style="height:23px" />';
+                   $customizedTitle .= ' <img src="'. HTTPS_SERVER .'catalog/view/theme/default/image/payment/hitpay/'.$logo.'.svg" alt="'.$logo.'" style="height:23px" />';
                 }
                 $customizedTitle .= '</span>';
             }
