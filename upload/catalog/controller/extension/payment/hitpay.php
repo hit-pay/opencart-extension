@@ -101,12 +101,9 @@ class ControllerExtensionPaymentHitPay extends Controller {
                     ->setPurpose('Order #' . $order_info['order_id'])
                     ->setName(trim($order_info['firstname']) . ' ' . trim($order_info['lastname']))
                     ->setReferenceNumber($order_info['order_id'])
-                   // ->setPhone($order_info['telephone'])
                     ->setRedirectUrl($this->url->link('extension/payment/hitpay/callback', '', true))
                     ->setWebhook($this->url->link('extension/payment/hitpay/webhook', '', true))
-                   // ->setAllowRepeatedPayments();
-                   // ->setExpiryDate('false')
-                   // ->setPaymentMethods($payment_methods)
+                    ->setChannel('api_opencart')
                     ;
                 $request->setChannel('api_opencart');
 
