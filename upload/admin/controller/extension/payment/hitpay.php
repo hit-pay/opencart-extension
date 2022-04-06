@@ -213,6 +213,14 @@ class ControllerExtensionPaymentHitPay extends Controller {
             array(
                 'value' => 'shopeepay',
                 'label' => 'Shopee Pay'
+            ),
+            array(
+                'value' => 'fpx',
+                'label' => 'FPX'
+            ),
+            array(
+                'value' => 'zip',
+                'label' => 'Zip'
             )
         );
         return $list;

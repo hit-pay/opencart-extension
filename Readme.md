@@ -96,3 +96,6 @@
 
 = 1.1.6 =
 - Added api channel field to the gateway
+
+= 1.2.0 =
+- Added FPX and Zip Payment logos selection
