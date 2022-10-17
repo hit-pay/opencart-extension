@@ -221,7 +221,31 @@ class ControllerExtensionPaymentHitPay extends Controller {
             array(
                 'value' => 'zip',
                 'label' => 'Zip'
-            )
+            ),
+            array(
+                'value' => 'atomeplus',
+                'label' => 'ATome+'
+            ),
+            array(
+                'value' => 'unionbank',
+                'label' => 'Unionbank Online'
+            ),
+            array(
+                'value' => 'qrph',
+                'label' => 'Instapay QR PH'
+            ),
+            array(
+                'value' => 'pesonet',
+                'label' => 'PESONet'
+            ),
+            array(
+                'value' => 'gcash',
+                'label' => 'GCash'
+            ),
+            array(
+                'value' => 'billease',
+                'label' => 'Billease BNPL'
+            ),
         );
         return $list;
     }
