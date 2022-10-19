@@ -99,3 +99,6 @@
 
 = 1.2.0 =
 - Added FPX and Zip Payment logos selection
+
+= 1.2.1 =
+- Added Atome and Billease, GCash, Union Bank, QRPH, PESONet logos

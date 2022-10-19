@@ -42,7 +42,6 @@ class ModelExtensionPaymentHitPay extends Model {
             if (isset($_REQUEST['route']) && $_REQUEST['route'] == 'checkout/payment_method') {
                 $customizedTitle .= '<span>';
                 $pngs = array(
-                    'atomeplus',
                     'pesonet',
                 );
                 foreach ($logos as $logo) {
