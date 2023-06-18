@@ -99,3 +99,6 @@
 
 = 1.2.0 =
 - Added FPX and Zip Payment logos selection
+
+= 1.2.2 =
+- Bug fixed when no logos selected causing the iteration of logos
