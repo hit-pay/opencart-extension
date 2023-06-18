@@ -22,6 +22,13 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_edit }}</h3>
+        
+        {% if upgrade_required %}
+        <h3 style="float: right; position: relative;top: -8px;">
+            <a target="_blank" href="{{ upgrade_link }}" class="button btn btn-default">Upgrade</a>
+        </h3>
+        {% endif %}
+        
       </div>
       <div class="panel-body">
         <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-payment" class="form-horizontal">

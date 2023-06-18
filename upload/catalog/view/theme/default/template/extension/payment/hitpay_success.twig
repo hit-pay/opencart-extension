@@ -1,0 +1,49 @@
+<script>
+    let ajax_url='{{ ajax_url }}';
+</script>
+<script>
+    jQuery(function(){
+         jQuery('html, body').animate({
+            scrollTop: jQuery('#hitpay_payment_status_container').offset().top - 20
+        }, 'slow');
+        setTimeout(check_status(ajax_url), Math.floor(Math.random()*500) );
+    });
+</script>
+
+<div class="payment-panel" id="hitpay_payment_status_container">
+    <div class="ca_loader" style="width: 100%; text-align: center; margin-bottom: 1rem;">
+        <div style="width: 100px; margin: 0 auto">
+            <div class="lds-css ng-scope">
+                <div style="width:100%;height:100%" class="lds-dual-ring">
+                    <div></div>
+                    <div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="payment_details" style="width: 100%; text-align: center">
+        <h4>We are retrieving your payment status, please wait...</h4>
+    </div>
+    <div class="payment_error" style="width: 100%; text-align: center; display: none">
+        <img src="{{ image_path }}disabled.gif" />
+        <span>Something went wrong, please contact the merchant</span>
+    </div>
+    <div class="payment_status_complete" style="width: 100%; text-align: center; display: none">
+        <img src="{{ image_path }}check.png" style="width:200px" />
+        <h4>Your payment has been confirmed!</h4>
+        <p>&nbsp;</p>
+    </div>
+    <div class="payment_status_failed" style="width: 100%; text-align: center; display: none">
+        <img src="{{ image_path }}disabled.gif" style="width:200px" />
+        <span>Your payment has been failed. </span>
+        <p>&nbsp;</p>
+    </div>
+    <div class="payment_status_pending" style="width: 100%; text-align: center; display: none">
+        <img src="{{ image_path }}warning.gif" style="width:200px" />
+        <span>Your payment status is in pending.</span>
+        <p>&nbsp;</p>
+    </div>
+    <p>&nbsp;</p>
+</div>
