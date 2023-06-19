@@ -102,3 +102,7 @@
 
 = 1.2.1 =
 - Added Atome and Billease, GCash, Union Bank, QRPH, PESONet logos
+
+= 1.2.2 =
+- Bug fixed when no logos selected causing the iteration of logos
+

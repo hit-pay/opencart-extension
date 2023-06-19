@@ -7,7 +7,7 @@ require_once DIR_SYSTEM.'library/hitpay-php-sdk/Response/Refund.php';
 
 class ControllerExtensionPaymentHitPay extends Controller {
     private $error = array();
-
+    
     public function index() {
         $this->load->language('extension/payment/hitpay');
 
@@ -21,6 +21,16 @@ class ControllerExtensionPaymentHitPay extends Controller {
             $this->session->data['success'] = $this->language->get('text_success');
 
             $this->response->redirect($this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true));
+        }
+        
+        $current_version = $this->getCurrentVersion();
+        $version = $this->getVersion();
+        if ($current_version != $version) {
+            $data['upgrade_required'] = true;
+            $upgrade_version = 'upgrade_'.$this->getVersionNumber($current_version).'_'.$this->getVersionNumber($version);
+            $data['upgrade_link'] = $this->url->link('extension/payment/hitpay/'.$upgrade_version, 'user_token=' . $this->session->data['user_token'], true);
+        } else {
+            $data['upgrade_required'] = false;
         }
 
         if (isset($this->error['warning'])) {
@@ -280,7 +290,7 @@ class ControllerExtensionPaymentHitPay extends Controller {
             $this->load->model('extension/payment/hitpay');
             $this->model_extension_payment_hitpay->uninstall();
     }
-        
+ 
     public function order_info(&$route, &$data, &$output) {
         $order_id = $this->request->get['order_id'];
         $this->load->model('extension/payment/hitpay');
@@ -434,5 +444,39 @@ class ControllerExtensionPaymentHitPay extends Controller {
 
         echo json_encode($response);
         exit;
+    }
+    
+    public function upgrade_120_121() {
+        $current_version = $this->getCurrentVersion();
+        $version = $this->getVersion();
+        if ($current_version == $version) {
+            echo 'Already upgraded to => '.$current_version;
+        } else {
+            $this->load->model('extension/payment/hitpay');
+            $this->model_extension_payment_hitpay->upgrade_120_121();
+            echo 'Upgraded Successfully.';
+        }
+        die;
+    }
+    
+    public function getVersion()
+    {
+        $this->load->model('extension/payment/hitpay');
+        return $this->model_extension_payment_hitpay->getVersion();
+    }
+    
+    public function getCurrentVersion()
+    {
+        $this->load->model('setting/setting');
+        $current_version = $this->model_setting_setting->getSettingValue('payment_hitpay_current_version');
+        if (!$current_version || empty($current_version)) {
+            $current_version = '1.2.0';
+        }
+        return $current_version;
+    }
+    
+    public function getVersionNumber($version)
+    {
+        return str_replace('.', '', $version);
     }
 }
