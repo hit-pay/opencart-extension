@@ -27,10 +27,19 @@ class ControllerExtensionPaymentHitPay extends Controller {
             if ($this->request->get['status'] == 'canceled') {
                 $this->response->redirect($this->url->link('checkout/failure', '', true));
             } else {
-                $order_id = (int)($this->session->data['order_id']);
-                if ($order_id == 0) {
-                    $order_id = (int)$this->request->get['order_id'];
+                
+                $order_id = 0;
+                
+                if (isset($this->session->data['order_id'])) {
+                    $order_id = (int)($this->session->data['order_id']);
                 }
+                
+                if ($order_id == 0) {
+                    if (isset($this->request->get['order_id'])) {
+                        $order_id = (int)$this->request->get['order_id'];
+                    }
+                }
+                
                 $this->response->redirect($this->url->link('checkout/success', 'order_id=' . $order_id, true));
             }
 	}
@@ -96,43 +105,46 @@ class ControllerExtensionPaymentHitPay extends Controller {
 
             $this->load->model('checkout/order');
             $this->load->model('extension/payment/hitpay');
+            
+            if (isset($this->session->data['order_id'])) {
+                $order_id = (int)$this->session->data['order_id'];
+                $order_info = $this->model_checkout_order->getOrder($order_id);
+                if ($order_info) {
 
-            $order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
-            if ($order_info) {
+                    try {
 
-                try {
-                    
-                    $redirect_url = $this->url->link('extension/payment/hitpay/callback', 'order_id=' . $this->session->data['order_id'], true);
-                    
-                    $payment_method = $this->config->get('payment_hitpay_title');
-                    $this->model_extension_payment_hitpay->updateOrderData($order_info['order_id'], 'payment_method', $payment_method);
+                        $redirect_url = $this->url->link('extension/payment/hitpay/callback', 'order_id=' . $this->session->data['order_id'], true);
 
-                    $request = new \HitPay\Request\CreatePayment();
+                        $payment_method = $this->config->get('payment_hitpay_title');
+                        $this->model_extension_payment_hitpay->updateOrderData($order_info['order_id'], 'payment_method', $payment_method);
 
-                    $request
-                        ->setAmount((float)$this->currency->format($order_info['total'], $order_info['currency_code'], $order_info['currency_value'], false))
-                        ->setCurrency(strtoupper($order_info['currency_code']))
-                        ->setEmail($order_info['email'])
-                        ->setPurpose('Order #' . $order_info['order_id'])
-                        ->setName(trim($order_info['firstname']) . ' ' . trim($order_info['lastname']))
-                        ->setReferenceNumber($order_info['order_id'])
-                        ->setRedirectUrl($redirect_url)
-                        ->setWebhook($this->url->link('extension/payment/hitpay/webhook', '', true))
-                        ->setChannel('api_opencart')
-                        ;
-                    $request->setChannel('api_opencart');
-                    
-                    if ($this->config->get('payment_hitpay_logging')) {
-                        $logger = new log('hitpay.log');
-                        $logger->write('create payment request');
-                        $logger->write((array)($request));
+                        $request = new \HitPay\Request\CreatePayment();
+
+                        $request
+                            ->setAmount((float)$this->currency->format($order_info['total'], $order_info['currency_code'], $order_info['currency_value'], false))
+                            ->setCurrency(strtoupper($order_info['currency_code']))
+                            ->setEmail($order_info['email'])
+                            ->setPurpose('Order #' . $order_info['order_id'])
+                            ->setName(trim($order_info['firstname']) . ' ' . trim($order_info['lastname']))
+                            ->setReferenceNumber($order_info['order_id'])
+                            ->setRedirectUrl($redirect_url)
+                            ->setWebhook($this->url->link('extension/payment/hitpay/webhook', '', true))
+                            ->setChannel('api_opencart')
+                            ;
+                        $request->setChannel('api_opencart');
+
+                        if ($this->config->get('payment_hitpay_logging')) {
+                            $logger = new log('hitpay.log');
+                            $logger->write('create payment request');
+                            $logger->write((array)($request));
+                        }
+
+                        $result = $hitPayClient->createPayment($request);
+                        header('Location: ' . $result->url);
+
+                    } catch (\Exception $e) {
+                        print_r($e->getMessage());
                     }
-
-                    $result = $hitPayClient->createPayment($request);
-                    header('Location: ' . $result->url);
-
-                } catch (\Exception $e) {
-                    print_r($e->getMessage());
                 }
             }
         }
