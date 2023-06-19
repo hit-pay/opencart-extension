@@ -41,11 +41,21 @@ class ModelExtensionPaymentHitPay extends Model {
 
             if (isset($_REQUEST['route']) && $_REQUEST['route'] == 'checkout/payment_method') {
                 $customizedTitle .= '<span>';
+
+                $pngs = array(
+                    'pesonet',
+                );
+
                 if ($logos && is_array($logos)) {
                     foreach ($logos as $logo) {
-                       $customizedTitle .= ' <img src="'. HTTPS_SERVER .'catalog/view/theme/default/image/payment/hitpay/'.$logo.'.svg" alt="'.$logo.'" style="height:23px" />';
+                      $extn = 'svg';
+                      if (in_array($logo, $pngs)) {
+                          $extn = 'png';
+                      }
+                       $customizedTitle .= ' <img src="'. HTTPS_SERVER .'catalog/view/theme/default/image/payment/hitpay/'.$logo.'.'.$extn.'" alt="'.$logo.'" style="height:23px" />';
                     }
                 }
+              
                 $customizedTitle .= '</span>';
             }
             
