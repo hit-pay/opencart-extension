@@ -106,3 +106,5 @@
 = 1.2.2 =
 - Bug fixed when no logos selected causing the iteration of logos
 
+= 1.2.3 =
+- Fixed. Undefined order_id
